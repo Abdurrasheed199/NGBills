@@ -1,0 +1,6 @@
+@NGBills_HostAddress = http://localhost:5159
+
+GET {{NGBills_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
