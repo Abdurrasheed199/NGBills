@@ -40,6 +40,7 @@ namespace NGBills.Implementation.Service
             // Create user
             var user = new User
             {
+
                 Email = registrationDto.Email,
                 FirstName = registrationDto.FirstName,
                 LastName = registrationDto.LastName,
@@ -123,8 +124,11 @@ namespace NGBills.Implementation.Service
                     new Claim(ClaimTypes.Surname, user.LastName)
                 }),
                 Expires = DateTime.UtcNow.AddHours(2),
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"],
                 SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                 new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);

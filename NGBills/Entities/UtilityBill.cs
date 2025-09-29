@@ -18,7 +18,7 @@ namespace NGBills.Entities
         public DateTime? DeletedAt { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public Transaction Transaction { get; set; }
+        public Transactions Transaction { get; set; }
         public int ProviderId { get; set; }
         public BillType Type { get; set; }
         public string AccountNumber { get; set; }

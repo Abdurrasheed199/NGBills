@@ -12,7 +12,8 @@ namespace NGBills.Interface.Service
         Task<decimal> GetWalletBalanceAsync(int userId);
         //Task<string> InitializeFundingAsync(int userId, FundWalletDto fundWalletDto);
         Task<bool> VerifyPaymentAsync(string reference);
-        Task<PaystackResponseDto> FundWalletAsync(decimal amount, string email, int userId);
+        Task<InitiateResponse> FundWalletAsync(decimal amount, string email, int userId);
+        //Task<WalletResponseDto> FundWalletAsync(decimal amount, string email, int userId);
         Task<IEnumerable<TransactionResponseDto>> GetWalletTransactionsAsync(int userId, int pageNumber = 1, int pageSize = 10);
       
     }

@@ -9,6 +9,14 @@ namespace NGBills.Implementation.Repository
     {
         public UserRepository(AppDbContext context) : base(context) { }
 
+
+
+        //public async Task<User> GetByIdAsync(int id)
+        //{
+        //    // ✅ Use await properly and don't use the same context instance concurrently
+        //    return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        //}
+
         public async Task<User> GetByEmailAsync(string email) =>
             await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 

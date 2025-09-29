@@ -56,14 +56,14 @@ namespace NGBills.Implementation.Service
             return filteredTransactions.Select(MapToDto);
         }
 
-        public async Task<Transaction> CreateTransactionAsync(Transaction transaction)
+        public async Task<Transactions> CreateTransactionAsync(Transactions transaction)
         {
             await _transactionRepository.AddAsync(transaction);
             await _transactionRepository.SaveChangesAsync();
             return transaction;
         }
 
-        private IEnumerable<Transaction> FilterTransactions(IEnumerable<Transaction> transactions, TransactionQueryDto query)
+        private IEnumerable<Transactions> FilterTransactions(IEnumerable<Transactions> transactions, TransactionQueryDto query)
         {
             var filtered = transactions.AsQueryable();
 
@@ -97,7 +97,7 @@ namespace NGBills.Implementation.Service
                 .ToList();
         }
 
-        private TransactionDto MapToDto(Transaction transaction)
+        private TransactionDto MapToDto(Transactions transaction)
         {
             return new TransactionDto
             {

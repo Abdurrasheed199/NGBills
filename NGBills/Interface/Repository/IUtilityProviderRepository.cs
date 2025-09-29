@@ -5,8 +5,6 @@ namespace NGBills.Interface.Repository
 {
     public interface IUtilityProviderRepository : IRepository<UtilityProvider>
     {
-
-        
         Task<UtilityProvider> GetProviderByNameAsync(string name);
         Task<IEnumerable<UtilityProvider>> GetActiveProvidersAsync();
         Task<IEnumerable<UtilityProvider>> GetProvidersByTypeAsync(BillType billType);

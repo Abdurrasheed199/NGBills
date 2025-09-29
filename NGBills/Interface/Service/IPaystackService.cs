@@ -4,7 +4,8 @@ namespace NGBills.Interface.Service
 {
     public interface IPaystackService
     {
-        Task<PaystackResponseDto> InitializeTransaction(FundWalletDto fundWalletDto);
-        Task<bool> VerifyTransaction(string reference);
+        
+        Task<PaystackVerifyResponse> VerifyTransaction(string reference);
+        Task<InitiateResponse> InitializePayment(FundWalletDto fundWalletDto);
     }
 }

@@ -5,10 +5,11 @@ using NGBills.Interface.Service;
 using static NGBills.DTOs.UtilityBillDtos;
 using System.Security.Claims;
 using static NGBills.DTOs.WalletDtos;
+using NGBills.Interface.Repository;
 
 namespace NGBills.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class WalletController : ControllerBase
@@ -16,26 +17,29 @@ namespace NGBills.Controllers
         private readonly IPaystackService _paystackService;
         private readonly IWalletService _walletService;
         private readonly IUtilityBillService _utilityBillService;
+        private readonly IUserRepository _userRepository;
         private readonly ILogger<WalletController> _logger;
 
         public WalletController(
             IPaystackService paystackService,
             IWalletService walletService,
             IUtilityBillService utilizationBillService,
+            IUserRepository userRepository,
             ILogger<WalletController> logger)
         {
             _paystackService = paystackService;
             _walletService = walletService;
             _utilityBillService = utilizationBillService;
+            _userRepository = userRepository;
             _logger = logger;
         }
 
         [HttpGet("balance")]
-        public async Task<IActionResult> GetBalance()
+        public async Task<IActionResult> GetBalance(int id)
         {
             try
             {
-                var userId = GetUserIdFromToken();
+                var userId = await GetUserIdFromToken(id);
                 var balance = await _walletService.GetWalletBalanceAsync(userId);
 
                 return Ok(new { Balance = balance, Currency = "NGN" });
@@ -48,11 +52,11 @@ namespace NGBills.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetWallet()
+        public async Task<IActionResult> GetWallet(int id)
         {
             try
             {
-                var userId = GetUserIdFromToken();
+                var userId = await GetUserIdFromToken(id);
                 var wallet = await _walletService.GetWalletDtoByUserIdAsync(userId);
 
                 return Ok(wallet);
@@ -73,12 +77,12 @@ namespace NGBills.Controllers
         //}
 
         [HttpPost("fund")]
-        public async Task<IActionResult> FundWallet([FromBody] FundWalletDto fundWalletDto)
+        public async Task<IActionResult> FundWallet([FromBody] FundWalletDto fundWalletDto, int id)
         {
             try
             {
-                var userId = GetUserIdFromToken();
-                var response = await _walletService.FundWalletAsync(fundWalletDto.Amount, fundWalletDto.Email,userId);
+                var userId = await GetUserIdFromToken(id);
+                var response = await _walletService.FundWalletAsync(fundWalletDto.Amount, fundWalletDto.Email, userId);
 
                 return Ok(response);
             }
@@ -89,19 +93,58 @@ namespace NGBills.Controllers
             }
         }
 
+        //[HttpPost("fund")]
+        //public async Task<IActionResult> FundWallet([FromBody] FundWalletDto fundWalletDto, int id)
+        //{
+        //    try
+        //    {
+        //        // Get user ID from token (you'll need to implement this)
+        //        var userId = GetUserIdFromToken(id);
+
+        //        if (userId <= 0)
+        //        {
+        //            return Unauthorized(new { message = "Invalid user token" });
+        //        }
+
+        //        var response = await _walletService.FundWalletAsync(
+        //            fundWalletDto.Amount,
+        //            fundWalletDto.Email,
+        //            userId);
+
+        //        if (!response.Success)
+        //        {
+        //            return BadRequest(new { message = response.Message });
+        //        }
+
+        //        return Ok(new
+        //        {
+        //            success = response.Success,
+        //            message = response.Message,
+        //            authorizationUrl = response.AuthorizationUrl,
+        //            reference = response.Reference
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error initializing wallet funding");
+        //        return BadRequest(new { message = "An error occurred while processing your request" });
+        //    }
+        //}
+
+
+
         [HttpPost("verify-payment")]
-        public async Task<IActionResult> VerifyPayment([FromBody] VerifyTransactionDto verifyDto)
+        public async Task<IActionResult> VerifyPayment([FromBody] VerifyTransactionDto verifyDto, int id)
         {
             try
             {
-                var userId = GetUserIdFromToken();
+                var userId = await GetUserIdFromToken(id);
                 var isVerified = await _paystackService.VerifyTransaction(verifyDto.Reference);
 
-                if (isVerified)
-                {
+              
                     await _walletService.ProcessPaymentVerification(verifyDto.Reference, userId);
                     return Ok(new { message = "Payment verified successfully" });
-                }
+                
 
                 return BadRequest(new { message = "Payment verification failed" });
             }
@@ -112,14 +155,29 @@ namespace NGBills.Controllers
             }
         }
 
-        private int GetUserIdFromToken()
+        //private int GetUserIdFromToken(int id)
+        //{
+
+
+        //    var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+        //             ?? User.FindFirst("sub")?.Value;
+
+        //    if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+        //    {
+        //        throw new UnauthorizedAccessException("Invalid user token");
+        //    }
+
+        //    return userId;
+        //}
+
+        private async Task<int> GetUserIdFromToken(int id)
         {
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
             {
-                throw new Exception("Invalid user ID in token");
+                throw new ArgumentException("User Not Found");
             }
-            return userId;
+            return user.Id; // Assuming your User entity has an Id property
         }
     }
 }

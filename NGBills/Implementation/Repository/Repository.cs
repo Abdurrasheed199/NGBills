@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NGBills.Context;
+using NGBills.Entities;
 using NGBills.Interface.Repository;
 using System.Linq.Expressions;
 
@@ -18,6 +19,8 @@ namespace NGBills.Implementation.Repository
 
         public async Task<T> GetByIdAsync(int id) => await _dbSet.FindAsync(id);
 
+        
+
         public async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
 
         public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate) =>
@@ -30,5 +33,7 @@ namespace NGBills.Implementation.Repository
         public void Delete(T entity) => _dbSet.Remove(entity);
 
         public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
+
+       
     }
 }

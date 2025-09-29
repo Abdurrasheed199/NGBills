@@ -16,10 +16,29 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("NGBills")));
 
-builder.Services.AddHttpClient<IPaystackService, PaystackService>();
+//builder.Services.AddHttpClient<IPaystackService, PaystackService>();
 
-// Configuration
+//// Configuration
+//builder.Services.Configure<PaystackSettings>(builder.Configuration.GetSection("Paystack"));
+
+
 builder.Services.Configure<PaystackSettings>(builder.Configuration.GetSection("Paystack"));
+
+builder.Services.AddHttpClient<IPaystackService, PaystackService>(client =>
+{
+    client.BaseAddress = new Uri("https://api.paystack.co/");
+    client.DefaultRequestHeaders.Authorization =
+        new System.Net.Http.Headers.AuthenticationHeaderValue(
+            "Bearer",
+            builder.Configuration["Paystack:SecretKey"]
+        );
+});
+
+
+
+
+
+
 
 // Register Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();

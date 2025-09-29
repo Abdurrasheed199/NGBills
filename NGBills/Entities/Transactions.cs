@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NGBills.Entities
 {
-    public class Transaction
+    public class Transactions
     {
         
         public int Id { get; set; }

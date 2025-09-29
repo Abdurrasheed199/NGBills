@@ -10,7 +10,7 @@ namespace NGBills.Context
 
         public DbSet<User> Users { get; set; }
         public DbSet<Wallet> Wallets { get; set; }
-        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<Transactions> Transactions { get; set; }
         public DbSet<UtilityBill> UtilityBills { get; set; }
         public DbSet<UtilityProvider> UtilityProviders { get; set; }
 
@@ -65,7 +65,7 @@ namespace NGBills.Context
             });
 
             // Transaction Configuration
-            modelBuilder.Entity<Transaction>(entity =>
+            modelBuilder.Entity<Transactions>(entity =>
             {
                 entity.HasKey(t => t.Id);
                 entity.HasIndex(t => t.Reference).IsUnique();

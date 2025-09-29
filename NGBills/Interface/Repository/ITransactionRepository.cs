@@ -2,10 +2,10 @@
 
 namespace NGBills.Interface.Repository
 {
-    public interface ITransactionRepository : IRepository<Transaction>
+    public interface ITransactionRepository : IRepository<Transactions>
     {
-        Task<IEnumerable<Transaction>> GetByWalletIdAsync(int walletId);
-        Task<Transaction> GetByReferenceAsync(string reference);
-        Task<IEnumerable<Transaction>> GetByUserIdAsync(int userId);
+        Task<IEnumerable<Transactions>> GetByWalletIdAsync(int walletId);
+        Task<Transactions> GetByReferenceAsync(string reference);
+        Task<IEnumerable<Transactions>> GetByUserIdAsync(int userId);
     }
 }

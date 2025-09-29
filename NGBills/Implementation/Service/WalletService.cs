@@ -11,6 +11,7 @@ namespace NGBills.Implementation.Service
     {
         private readonly IWalletRepository _walletRepository;
         private readonly ITransactionRepository _transactionRepository;
+        private readonly ITransactionService _transactionService;
         private readonly IUserRepository _userRepository;
         private readonly IPaystackService _paystackService;
         private readonly ILogger<WalletService> _logger;
@@ -18,12 +19,14 @@ namespace NGBills.Implementation.Service
         public WalletService(
             IWalletRepository walletRepository,
             ITransactionRepository transactionRepository,
+            ITransactionService transactionService,
             IUserRepository userRepository,
             IPaystackService paystackService,
             ILogger<WalletService> logger)
         {
             _walletRepository = walletRepository;
             _transactionRepository = transactionRepository;
+            _transactionService = transactionService;
             _userRepository = userRepository;
             _paystackService = paystackService;
             _logger = logger;
@@ -89,33 +92,7 @@ namespace NGBills.Implementation.Service
             return wallet.Balance;
         }
 
-        //public async Task<string> InitializeFundingAsync(int userId, FundWalletDto fundWalletDto)
-        //{
-        //    var wallet = await _walletRepository.GetByUserIdAsync(userId);
-        //    if (wallet == null)
-        //        throw new Exception("Wallet not found");
-
-        //    // Create transaction record
-        //    var transaction = new Transaction
-        //    {
-        //        WalletId = wallet.Id,
-        //        Amount = fundWalletDto.Amount,
-        //        Type = TransactionType.Funding,
-        //        Status = TransactionStatus.Pending,
-        //        Reference = $"ref_{Guid.NewGuid():N}",
-        //        Description = "Wallet funding",
-        //        CreatedAt = DateTime.UtcNow
-        //    };
-
-        //    await _transactionRepository.AddAsync(transaction);
-
-        //    // Initialize Paystack payment
-        //    var paystackResponse = await _paystackService.InitializeTransaction(
-        //        fundWalletDto.Amount,
-        //        fundWalletDto.Email);
-
-        //    return paystackResponse.AuthorizationUrl;
-        //}
+        
 
 
         public async Task<bool> VerifyPaymentAsync(string reference)
@@ -130,7 +107,7 @@ namespace NGBills.Implementation.Service
 
             var verification = await _paystackService.VerifyTransaction(reference);
 
-            if (verification)
+            try
             {
                 // Update transaction status
                 transaction.Status = TransactionStatus.Successful;
@@ -143,7 +120,7 @@ namespace NGBills.Implementation.Service
 
                 return true;
             }
-            else
+            catch(Exception ex)
             {
                 transaction.Status = TransactionStatus.Failed;
                _transactionRepository.Update(transaction);
@@ -168,7 +145,7 @@ namespace NGBills.Implementation.Service
             return transactions.Select(MapToTransactionResponseDto);
         }
 
-        public async Task<PaystackResponseDto> FundWalletAsync(decimal amount, string email, int userId)
+        public async Task<InitiateResponse> FundWalletAsync(decimal amount, string email, int userId)
         {
             var fundwallet = new FundWalletDto
             {
@@ -176,8 +153,14 @@ namespace NGBills.Implementation.Service
                 Email = email,
             };
 
-            await _userRepository.GetByIdAsync(userId);
-            return await _paystackService.InitializeTransaction(fundwallet);
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if(user == null)
+            {
+                throw new Exception("User Not Found");
+            }
+
+            return await _paystackService.InitializePayment(fundwallet);
         }
 
 
@@ -194,7 +177,7 @@ namespace NGBills.Implementation.Service
             };
         }
 
-        private TransactionResponseDto MapToTransactionResponseDto(Transaction transaction)
+        private TransactionResponseDto MapToTransactionResponseDto(Transactions transaction)
         {
             if (transaction == null) return null;
 

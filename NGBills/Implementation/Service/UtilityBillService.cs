@@ -60,7 +60,7 @@ namespace NGBills.Implementation.Service
 
         public async Task<UtilityBillResponseDto> AddBillAsync(int userId, AddBillDto addBillDto)
         {
-            // Verify user exists
+            
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
                 throw new Exception("User not found");
@@ -100,8 +100,8 @@ namespace NGBills.Implementation.Service
             if (wallet.Balance < bill.Amount)
                 throw new Exception("Insufficient balance");
 
-            // Create transaction record
-            var transaction = new Transaction
+            
+            var transaction = new Transactions
             {
                 WalletId = wallet.Id,
                 Amount = bill.Amount,
@@ -114,11 +114,11 @@ namespace NGBills.Implementation.Service
 
             await _transactionRepository.AddAsync(transaction);
 
-            // Update wallet balance
+            
             wallet.Balance -= bill.Amount;
             _walletRepository.Update(wallet);
 
-            // Update bill status
+            
             bill.IsPaid = true;
             bill.PaidDate = DateTime.UtcNow;
             bill.TransactionId = transaction.Id;
@@ -145,10 +145,10 @@ namespace NGBills.Implementation.Service
 
 
 
-        // ✅ BETTER: Retrieve bill from provider instead of creating manually
+        
         public async Task<BillRetrievalResult> RetrieveBillFromProviderAsync(RetrieveBillDto retrieveDto)
         {
-            // Validate provider exists and is active
+            
             var provider = await _providerRepository.GetByIdAsync(retrieveDto.ProviderId);
             if (provider == null || !provider.IsActive)
             {
@@ -159,7 +159,7 @@ namespace NGBills.Implementation.Service
                 };
             }
 
-            // ✅ Retrieve actual bill data from provider (mock implementation)
+            
             var billData = await GetBillDataFromProvider(provider, retrieveDto.AccountNumber);
 
             if (!billData.Success)
@@ -171,7 +171,7 @@ namespace NGBills.Implementation.Service
                 };
             }
 
-            // Check if bill already exists and is unpaid
+            
             var existingBill = await _utilityBillRepository.GetUnpaidBillAsync(
                 retrieveDto.UserId,
                 retrieveDto.AccountNumber,
@@ -190,7 +190,7 @@ namespace NGBills.Implementation.Service
                 };
             }
 
-            // Create new bill with VERIFIED data from provider
+            
             var bill = new UtilityBill
             {
                 UserId = retrieveDto.UserId,
@@ -198,8 +198,8 @@ namespace NGBills.Implementation.Service
                 Provider = provider.Name,
                 ProviderId = provider.Id,
                 AccountNumber = retrieveDto.AccountNumber,
-                Amount = billData.Amount, // ✅ From provider, not user input
-                DueDate = billData.DueDate, // ✅ From provider
+                Amount = billData.Amount, 
+                DueDate = billData.DueDate, 
                 IsPaid = false,
                 CreatedAt = DateTime.UtcNow,
                 RetrievalReference = billData.ReferenceNumber
@@ -223,7 +223,7 @@ namespace NGBills.Implementation.Service
         }
 
 
-        // Manual mapping methods
+        
         private UtilityBillResponseDto MapToUtilityBillResponseDto(UtilityBill bill)
         {
             if (bill == null) return null;
@@ -241,7 +241,7 @@ namespace NGBills.Implementation.Service
             };
         }
 
-        private TransactionResponseDto MapToTransactionResponseDto(Transaction transaction)
+        private TransactionResponseDto MapToTransactionResponseDto(Transactions transaction)
         {
             if (transaction == null) return null;
 
@@ -263,19 +263,16 @@ namespace NGBills.Implementation.Service
         {
             try
             {
-                // In real implementation, this would call the actual utility provider's API
-                // For now, we'll mock the response based on provider type and account number
-
-                // Simulate API call delay
+                
                 await Task.Delay(500);
 
-                // Validate account number format (basic validation)
+                
                 if (string.IsNullOrWhiteSpace(accountNumber) || accountNumber.Length < 6)
                 {
                     return new ProviderBillData { Success = false, Message = "Invalid account number" };
                 }
 
-                // Mock bill data based on provider type
+                
                 return provider.Type switch
                 {
                     BillType.Electricity => new ProviderBillData

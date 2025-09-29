@@ -8,6 +8,6 @@ namespace NGBills.Interface.Service
         Task<TransactionDto> GetTransactionByIdAsync(int id, int userId);
         Task<IEnumerable<TransactionDto>> GetUserTransactionsAsync(int userId, TransactionQueryDto query);
         Task<IEnumerable<TransactionDto>> GetWalletTransactionsAsync(int walletId, TransactionQueryDto query);
-        Task<Transaction> CreateTransactionAsync(Transaction transaction);
+        Task<Transactions> CreateTransactionAsync(Transactions transaction);
     }
 }

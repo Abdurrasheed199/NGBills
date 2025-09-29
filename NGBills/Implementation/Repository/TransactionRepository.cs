@@ -5,20 +5,20 @@ using NGBills.Entities;
 
 namespace NGBills.Implementation.Repository
 {
-    public class TransactionRepository : Repository<Transaction>, ITransactionRepository
+    public class TransactionRepository : Repository<Transactions>, ITransactionRepository
     {
         public TransactionRepository(AppDbContext context) : base(context) { }
 
-        public async Task<IEnumerable<Transaction>> GetByWalletIdAsync(int walletId) =>
+        public async Task<IEnumerable<Transactions>> GetByWalletIdAsync(int walletId) =>
             await _context.Transactions
                 .Where(t => t.WalletId.Equals(walletId))
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
 
-        public async Task<Transaction> GetByReferenceAsync(string reference) =>
+        public async Task<Transactions> GetByReferenceAsync(string reference) =>
             await _context.Transactions.FirstOrDefaultAsync(t => t.Reference == reference);
 
-        public async Task<IEnumerable<Transaction>> GetByUserIdAsync(int userId) =>
+        public async Task<IEnumerable<Transactions>> GetByUserIdAsync(int userId) =>
             await _context.Transactions
                 .Include(t => t.Wallet)
                 .Where(t => t.Wallet.UserId.Equals(userId))
